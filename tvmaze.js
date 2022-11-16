@@ -16,14 +16,22 @@ const DEFAULT_IMAGE = "https://tinyurl.com/tv-missing";
  */
 
 async function getShowsByTerm(term) {
-  // ADD: Remove placeholder & make request to TVMaze search shows API.
+    // ADD: Remove placeholder & make request to TVMaze search shows API.
 
-  let response = await axios.get(`${TVMAZE_BASE_URL}search/shows`,
-    { params: {q: term}});
+    let response = await axios.get(`${TVMAZE_BASE_URL}search/shows`,
+        { params: { q: term } });
 
-  console.log("getShowsByTerm:", response);
+    console.log("getShowsByTerm:", response);
 
-  return response.data;
+    return response.data.map(ele => {
+        return {
+            id: ele.show.id,
+            name: ele.show.name,
+            summary: ele.show.summary,
+            image: ele.show.image
+        }
+    });
+    //return response.data;
 
 
 }
@@ -32,17 +40,18 @@ async function getShowsByTerm(term) {
 /** Given list of shows, create markup for each and to DOM */
 
 function populateShows(shows) {
-  $showsList.empty();
+    $showsList.empty();
 
-  for (let show of shows) {
-    show = show.show;
-    if(show.image === null) {
-      show.image = {};
-      show.image.original = DEFAULT_IMAGE;
-    }
-    console.log("populateShows:", show);
-    const $show = $(
-        `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
+    for (let show of shows) {
+
+        show.image = show.image === null ? show.image = { original: DEFAULT_IMAGE } : show.image;
+        // if (show.image === null) {
+        //     show.image = {};
+        //     show.image.original = DEFAULT_IMAGE;
+        // }
+        console.log("populateShows:", show);
+        const $show = $(
+            `<div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img
               src="${show.image.original}"
@@ -59,8 +68,8 @@ function populateShows(shows) {
        </div>
       `);
 
-    $showsList.append($show);
-  }
+        $showsList.append($show);
+    }
 }
 
 
@@ -69,16 +78,16 @@ function populateShows(shows) {
  */
 
 async function searchForShowAndDisplay() {
-  const term = $("#searchForm-term").val();
-  const shows = await getShowsByTerm(term);
+    const term = $("#searchForm-term").val();
+    const shows = await getShowsByTerm(term);
 
-  $episodesArea.hide();
-  populateShows(shows);
+    $episodesArea.hide();
+    populateShows(shows);
 }
 
 $searchForm.on("submit", async function (evt) {
-  evt.preventDefault();
-  await searchForShowAndDisplay();
+    evt.preventDefault();
+    await searchForShowAndDisplay();
 });
 
 
