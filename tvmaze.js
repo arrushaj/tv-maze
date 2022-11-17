@@ -3,6 +3,7 @@
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
+const $episodesList = $("#episodesList");
 
 const TVMAZE_BASE_URL = "http://api.tvmaze.com/";
 const DEFAULT_IMAGE = "https://tinyurl.com/tv-missing";
@@ -95,8 +96,46 @@ $searchForm.on("submit", async function (evt) {
  *      { id, name, season, number }
  */
 
-// async function getEpisodesOfShow(id) { }
+async function getEpisodesOfShow(id) {
+    let response = await axios.get(`${TVMAZE_BASE_URL}shows/${id}/episodes`);
+
+    let episodes = response.data.map(ele => {
+        return {
+            id: ele.id,
+            name: ele.name,
+            season: ele.season,
+            number: ele.number
+        }
+    });
+
+    console.log("Episodes=", episodes);
+    populateEpisodes(episodes);
+}
 
 /** Write a clear docstring for this function... */
 
-// function populateEpisodes(episodes) { }
+function populateEpisodes(episodes) {
+    $episodesArea.show();
+    $episodesList.empty();
+
+    for (let episode of episodes) {
+
+        console.log("populateShows:", episode);
+        const $episode = $(
+            `<li>${episode.name} (season ${episode.season}, number ${episode.number}) </li>`
+        );
+
+        $episodesList.append($episode);
+    }
+}
+
+$showsList.on('click', "button", searchForEpisodesAndDisplay);
+
+async function searchForEpisodesAndDisplay(evt) {
+
+    let $showId = $(evt.target).closest(".Show");
+    let id = $showId.data("show-id");
+    console.log($showId);
+    console.log(id);
+    getEpisodesOfShow(id);
+}
